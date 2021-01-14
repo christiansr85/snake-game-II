@@ -1,5 +1,11 @@
 import { Direction, DirectionXY } from './constants.js';
 
+const isValidDirection = (snake, direction) => {
+    const snakeDirectionXY = DirectionXY[snake.direction];
+    const directionXY = DirectionXY[direction];
+    return (snakeDirectionXY[0] + directionXY[0]) !== 0;
+}
+
 export const createSnake = () => {
     const snake = {
         direction: Direction.DOWN,
@@ -15,16 +21,19 @@ export const createSnake = () => {
 }
 
 export const changeDirectionSnake = (snake, direction) => {
+    if (!direction || !isValidDirection(snake, direction)) {
+        return snake;
+    }
     snake.direction = direction || snake.direction;
-    return snake;    
+    return snake;
 }
 
 export const moveSnake = (snake, bounds) => {
     const lastItem = snake.body[snake.body.length - 1];
     const directionXY = DirectionXY[snake.direction];
     const newItem = [
-       (bounds.height + lastItem[0] + directionXY[0]) % bounds.height,
-       (bounds.width + lastItem[1] + directionXY[1]) % bounds.width,
+        (bounds.height + lastItem[0] + directionXY[0]) % bounds.height,
+        (bounds.width + lastItem[1] + directionXY[1]) % bounds.width,
     ];
     snake.body.push(newItem);
     snake.body.shift();
