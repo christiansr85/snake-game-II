@@ -32,12 +32,10 @@ export const moveSnake = (snake, bounds) => {
     const lastItem = snake.body[snake.body.length - 1];
     const directionXY = DirectionXY[snake.direction];
     const newItem = [
-        (bounds.height + lastItem[0] + directionXY[0]) % bounds.height,
-        (bounds.width + lastItem[1] + directionXY[1]) % bounds.width,
+        (bounds.width + lastItem[0] + directionXY[0]) % bounds.width,
+        (bounds.height + lastItem[1] + directionXY[1]) % bounds.height,
     ];
     snake.body.push(newItem);
     snake.body.shift();
-    // console.log('last item: ', lastItem)
-    // console.log('snake: ', snake)
     return snake;
 }
