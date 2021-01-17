@@ -7,6 +7,11 @@ const fps = 15;
 const ms = 1000 / fps;
 const scale = 10;
 
+const showDeath = () => {
+    const died = document.getElementById('died');
+    died.classList.remove('hidden');
+}
+
 const renderSnake = (ctxt, snake) => {
     snake.body.forEach(({ x, y }) => {
         ctxt.fillStyle = snake.color;
@@ -49,6 +54,7 @@ const loop = (ctxt, canvas, snake, apple) => {
         const dead = step(ctxt, canvas, snake, apple);
         if (dead) {
             clearInterval(interval);
+            showDeath();
         }
     }, ms);
 
