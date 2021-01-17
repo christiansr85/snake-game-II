@@ -1,7 +1,7 @@
 import { APPLE_RADIUS } from './constants.js';
 export const createApple = (x, y) => {
     return {
-        color: '#0000FF',
+        color: '#00FF00',
         x: x,
         y: y,
         radius: APPLE_RADIUS,
