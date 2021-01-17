@@ -1,20 +1,24 @@
-import { Direction, DirectionXY } from './constants.js';
+import { DIRECTION, DIRECTIONXY } from './constants.js';
 
 const isValidDirection = (snake, direction) => {
-    const snakeDirectionXY = DirectionXY[snake.direction];
-    const directionXY = DirectionXY[direction];
+    const snakeDirectionXY = DIRECTIONXY[snake.direction];
+    const directionXY = DIRECTIONXY[direction];
     return (snakeDirectionXY[0] + directionXY[0]) !== 0;
 }
 
 export const createSnake = () => {
     const snake = {
-        direction: Direction.DOWN,
+        head: {
+            x: 1, y: 4
+        },
+        color: '#000',
+        direction: DIRECTION.DOWN,
         body: [
-            [0, 1],
-            [0, 2],
-            [0, 3],
-            [1, 3],
-            [1, 4],
+            { x: 0, y: 1 },
+            { x: 0, y: 2 },
+            { x: 0, y: 3 },
+            { x: 1, y: 3 },
+            { x: 1, y: 4 },
         ]
     };
     return snake;
@@ -28,14 +32,17 @@ export const changeDirectionSnake = (snake, direction) => {
     return snake;
 }
 
-export const moveSnake = (snake, bounds) => {
+export const moveSnake = (snake, bounds, grow) => {
     const lastItem = snake.body[snake.body.length - 1];
-    const directionXY = DirectionXY[snake.direction];
-    const newItem = [
-        (bounds.width + lastItem[0] + directionXY[0]) % bounds.width,
-        (bounds.height + lastItem[1] + directionXY[1]) % bounds.height,
-    ];
+    const directionXY = DIRECTIONXY[snake.direction];
+    const newItem =
+    {
+        x: (bounds.width + lastItem.x + directionXY[0]) % bounds.width,
+        y: (bounds.height + lastItem.y + directionXY[1]) % bounds.height,
+    };
+
     snake.body.push(newItem);
-    snake.body.shift();
+    snake.head = newItem;
+    !grow && snake.body.shift();
     return snake;
 }
