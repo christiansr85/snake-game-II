@@ -21,18 +21,16 @@ const renderApple = (ctxt, apple) => {
     ctxt.fill();
 }
 
-const clearCircle = (context, x, y, radius) => {
-    context.save();
-    context.beginPath();
-    context.arc(x + .5, y + .5, radius, 0, 2 * Math.PI, true);
-    context.clip();
-    context.clearRect(x - radius, y - radius, radius * 2, radius * 2);
-    context.restore();
-}
-
 const hasEatenApple = (snake, apple) => {
     const { head } = snake;
     return head.x === apple.x && head.y === apple.y;
+}
+
+const hasCollideItself = (snake) => {
+    const { head } = snake;
+    // Take all the body unless the head
+    const body = snake.body.slice(0, snake.body.length - 1);
+    return !! body.find(item => item.x === head.x && item.y === head.y);
 }
 
 const keyHandler = (e) => {
@@ -48,7 +46,10 @@ const keyHandler = (e) => {
 
 const loop = (ctxt, canvas, snake, apple) => {
     const interval = setInterval(() => {
-        step(ctxt, canvas, snake, apple);
+        const dead = step(ctxt, canvas, snake, apple);
+        if (dead) {
+            clearInterval(interval);
+        }
     }, ms);
 
     return interval;
@@ -56,18 +57,18 @@ const loop = (ctxt, canvas, snake, apple) => {
 
 const step = (ctxt, canvas, snake, apple) => {
     ctxt.clearRect(0, 0, canvas.width, canvas.height);
-    // clearCircle(ctxt, apple.x, apple.y, apple.radius);
     const collisionApple = hasEatenApple(snake, apple);
     if (collisionApple) {
         moveApple(
             apple,
-            Math.floor(Math.random() * (canvas.width/scale - 0) + 0),
-            Math.floor(Math.random() * (canvas.height/scale - 0) + 0),
+            Math.floor(Math.random() * (canvas.width / scale - 0) + 0),
+            Math.floor(Math.random() * (canvas.height / scale - 0) + 0),
         );
     }
     moveSnake(snake, { height: canvas.height / scale, width: canvas.width / scale }, collisionApple);
     renderSnake(ctxt, snake);
     renderApple(ctxt, apple);
+    return hasCollideItself(snake);
 }
 
 const init = (placeholder) => {
