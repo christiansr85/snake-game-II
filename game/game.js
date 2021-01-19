@@ -1,41 +1,19 @@
-import { DIRECTION } from './constants.js';
+import { DIRECTION, INTERVAL, SCALE } from './constants.js';
+import {
+    getCanvas,
+    getContext,
+    stepContext,
+    renderAppleContext,
+    renderSnakeContext,
+    getRandomCoordinatesCanvas,
+    getBoundsCanvas,
+} from './gameRendererCanvas.js';
 import { createSnake, moveSnake, changeDirectionSnake } from './snake.js';
 import { createApple, moveApple } from './apple.js';
-
-// 1000/x where 'x' is the number which defines the fps
-const fps = 15;
-const ms = 1000 / fps;
-const scale = 10;
 
 const showDeath = () => {
     const died = document.getElementById('died');
     died.classList.remove('hidden');
-}
-
-const renderSnake = (ctxt, snake) => {
-    snake.body.forEach(({ x, y }) => {
-        ctxt.fillStyle = snake.color;
-        ctxt.fillRect(x, y, 1, 1);
-    });
-}
-
-const renderApple = (ctxt, apple) => {
-    ctxt.beginPath();
-    ctxt.arc(apple.x + .5, apple.y + .5, apple.radius, 0, 2 * Math.PI, false);
-    ctxt.fillStyle = apple.color;
-    ctxt.fill();
-}
-
-const hasEatenApple = (snake, apple) => {
-    const { head } = snake;
-    return head.x === apple.x && head.y === apple.y;
-}
-
-const hasCollideItself = (snake) => {
-    const { head } = snake;
-    // Take all the body unless the head
-    const body = snake.body.slice(0, snake.body.length - 1);
-    return !! body.find(item => item.x === head.x && item.y === head.y);
 }
 
 const keyHandler = (e) => {
@@ -49,55 +27,64 @@ const keyHandler = (e) => {
     }
 }
 
-const loop = (ctxt, canvas, snake, apple) => {
-    const interval = setInterval(() => {
-        const dead = step(ctxt, canvas, snake, apple);
-        if (dead) {
-            clearInterval(interval);
-            showDeath();
-        }
-    }, ms);
-
-    return interval;
-}
-
-const step = (ctxt, canvas, snake, apple) => {
-    ctxt.clearRect(0, 0, canvas.width, canvas.height);
-    const collisionApple = hasEatenApple(snake, apple);
-    if (collisionApple) {
-        moveApple(
-            apple,
-            Math.floor(Math.random() * (canvas.width / scale - 0) + 0),
-            Math.floor(Math.random() * (canvas.height / scale - 0) + 0),
-        );
-    }
-    moveSnake(snake, { height: canvas.height / scale, width: canvas.width / scale }, collisionApple);
-    renderSnake(ctxt, snake);
-    renderApple(ctxt, apple);
-    return hasCollideItself(snake);
-}
-
 const init = (placeholder) => {
     let interval;
-    let canvas = placeholder;
-    if (typeof (placeholder) === 'string') {
-        canvas = document.getElementById(placeholder);
-    }
-
-    const snake = createSnake();
-    const apple = createApple(6, 7);
+    const canvas = getCanvas(placeholder);
+    const ctxt = getContext(canvas, SCALE);
 
     window.addEventListener('keydown', (e) => {
         const direction = keyHandler(e);
         changeDirectionSnake(snake, direction);
     }, false);
 
-    const ctxt = canvas.getContext('2d');
-    ctxt.scale(scale, scale);
+    const hasEatenApple = (snake, apple) => {
+        const { head } = snake;
+        return head.x === apple.x && head.y === apple.y;
+    }
 
-    renderSnake(ctxt, snake);
-    renderApple(ctxt, apple);
-    interval = loop(ctxt, canvas, snake, apple);
+    const hasCollideItself = (snake) => {
+        const { head } = snake;
+        // Take all the body unless the head
+        const body = snake.body.slice(0, snake.body.length - 1);
+        return !!body.find(item => item.x === head.x && item.y === head.y);
+    }
+
+    const getRandomCoordinates = getRandomCoordinatesCanvas(canvas, SCALE);
+    const getBounds = getBoundsCanvas(canvas, SCALE);
+    const renderSnake = renderSnakeContext(ctxt);
+    const renderApple = renderAppleContext(ctxt);
+    const step = stepContext(ctxt, canvas);
+
+    const snake = createSnake();
+    const apple = createApple(getRandomCoordinates());
+
+    const loop = (snake, apple) => {
+        const interval = setInterval(() => {
+            const dead = step(() => {
+                const collisionApple = hasEatenApple(snake, apple);
+                if (collisionApple) {
+                    moveApple(
+                        apple,
+                        getRandomCoordinates()
+                    );
+                }
+                moveSnake(snake, collisionApple, getBounds());
+                renderSnake(snake);
+                renderApple(apple);
+                return hasCollideItself(snake);
+            });
+            if (dead) {
+                clearInterval(interval);
+                showDeath();
+            }
+        }, INTERVAL);
+
+        return interval;
+    }
+
+    renderSnake(snake);
+    renderApple(apple);
+    interval = loop(snake, apple);
 
     const btnStart = document.getElementById('start');
     const btnStop = document.getElementById('stop');
@@ -113,7 +100,7 @@ const init = (placeholder) => {
         interval = 0;
     });
     btnStep.addEventListener('click', (e) => {
-        step(ctxt, canvas, snake);
+        step(ctxt, canvas, snake, apple);
     });
 }
 

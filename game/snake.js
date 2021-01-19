@@ -32,7 +32,7 @@ export const changeDirectionSnake = (snake, direction) => {
     return snake;
 }
 
-export const moveSnake = (snake, bounds, grow) => {
+export const moveSnake = (snake, grow, bounds) => {
     const lastItem = snake.body[snake.body.length - 1];
     const directionXY = DIRECTIONXY[snake.direction];
     const newItem =

@@ -13,3 +13,8 @@ export const DIRECTIONXY = Object.freeze({
 });
 
 export const APPLE_RADIUS = 0.5;
+
+// 1000/x where 'x' is the number which defines the fps
+const fps = 15;
+export const INTERVAL = 1000 / fps;
+export const SCALE = 10;
